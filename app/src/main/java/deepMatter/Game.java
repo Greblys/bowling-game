@@ -1,9 +1,8 @@
 package deepMatter;
 
-import deepMatter.Frame;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -11,56 +10,46 @@ public class Game {
 
     private static final int FRAMES = 10;
     private static final int PINS = 10;
-    private int currentIndex = 0;
 
-    private Frame[] frames = new Frame[FRAMES];
+    private final ArrayList<Integer> balls = new ArrayList<>();
+    private final int[] scores = new int[FRAMES];
 
-    public void addFrame(Frame f) {
-        frames[currentIndex] = f;
-        currentIndex++;
+    public void addBallScore(int score) {
+        balls.add(score);
+    }
+
+    public void simulate() {
+        int currentFrame = 0;
+        int i = 0; // current ball index
+
+        while(currentFrame < FRAMES) {
+            try {
+                // strike
+                if (balls.get(i) == PINS) {
+                    scores[currentFrame] = balls.get(i) + balls.get(i + 1) + balls.get(i + 2);
+                    i++;
+                // spare
+                } else if (balls.get(i) + balls.get(i + 1) == PINS) {
+                    scores[currentFrame] = balls.get(i) + balls.get(i + 1) + balls.get(i + 2);
+                    i += 2;
+                } else {
+                    scores[currentFrame] = balls.get(i) + balls.get(i + 1);
+                    i += 2;
+                }
+                currentFrame++;
+            } catch (IndexOutOfBoundsException e) {
+                System.err.println("Invalid input file. Some ball scores are missing");
+                System.exit(-1);
+            }
+        }
     }
 
     public int[] getFramesScores() {
-        int[] scores = new int[FRAMES];
-        for(int i = 0; i < scores.length; i++){
-            scores[i] = getFrameScore(i);
-        }
         return scores;
     }
 
     public int gameScore() {
-        return Arrays.stream(getFramesScores()).reduce(Integer::sum).getAsInt();
-    }
-
-    private int getNextBallScore(int frameIndex) {
-        int nextFrameIndex = frameIndex + 1;
-        if (nextFrameIndex < frames.length && frameIndex > 0) {
-            return frames[nextFrameIndex].getFirstBall();
-        } else {
-            return 0;
-        }
-    }
-
-    private int getNextTwoBallsScore(int frameIndex) {
-        int nextFrameIndex = frameIndex + 1;
-        if (nextFrameIndex < frames.length && frameIndex > 0) {
-            return frames[nextFrameIndex].getFirstBall() + frames[nextFrameIndex].getSecondBall();
-        } else {
-            return 0;
-        }
-    }
-
-    private int getFrameScore(int frameIndex) {
-
-        int score = frames[frameIndex].getFirstBall() + frames[frameIndex].getSecondBall();
-
-        if(frames[frameIndex].getFirstBall() == PINS) {
-            return PINS + getNextTwoBallsScore(frameIndex + 1);
-        } else if (score == PINS) {
-            return score + getNextBallScore(frameIndex);
-        } else {
-            return score;
-        }
+        return Arrays.stream(scores).reduce(Integer::sum).getAsInt();
     }
 
     public static void main(String[] args) {
@@ -77,21 +66,17 @@ public class Game {
             System.err.println(String.format("File %s does not exist. Please create one!", inputFile));
             System.exit(-1);
         }
+
         Game game = new Game();
 
         while(scanner.hasNextInt()){
-            int firstBall = scanner.nextInt();
-            if(scanner.hasNextInt()) {
-                int secondBall = scanner.nextInt();
-                Frame frame = new Frame(firstBall, secondBall);
-                game.addFrame(frame);
-            } else {
-                System.err.println("Invalid input! Frame is missing a number of knocked out pins for a 2nd ball.");
-                System.exit(-1);
-            }
+            game.addBallScore(scanner.nextInt());
         }
+        scanner.close();
 
-        System.out.println("Game score: ");
+        game.simulate();
 
+        System.out.println("Game score: " + game.gameScore());
+        System.out.println("Frames scores: " + Arrays.toString(game.getFramesScores()));
     }
 }

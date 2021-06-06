@@ -1,11 +1,11 @@
-package com.deep.matter;
+package deepMatter;
+
+import deepMatter.Frame;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Scanner;
-import java.util.function.IntBinaryOperator;
 
 public class Game {
 

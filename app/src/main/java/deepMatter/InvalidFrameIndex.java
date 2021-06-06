@@ -1,4 +1,4 @@
-package com.deep.matter;
+package deepMatter;
 
 public class InvalidFrameIndex extends Exception {
 }

@@ -1,4 +1,4 @@
-package com.deep.matter;
+package deepMatter;
 
 public class Frame {
     private int firstBall = 0;
